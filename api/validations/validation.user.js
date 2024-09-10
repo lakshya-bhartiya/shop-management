@@ -66,16 +66,5 @@ const loginValidationSchema = Joi.object({
             "string.min": "Password should have at least 6 characters.",
             "any.required": "Password is required."
         }),
-    mobile: Joi.string()
-        .pattern(/^[0-9]+$/)
-        .length(10)
-        .required()
-        .messages({
-            "string.base": "Mobile should be a string of digits.",
-            "string.empty": "Mobile number is required.",
-            "string.pattern.base": "Mobile number should contain only digits.",
-            "string.length": "Mobile number should be exactly 10 digits.",
-            "any.required": "Mobile number is required."
-        })
 })
 module.exports = {registerValidationSchema, loginValidationSchema};

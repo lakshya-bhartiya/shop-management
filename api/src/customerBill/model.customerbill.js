@@ -1,4 +1,3 @@
-const { date } = require("joi");
 const mongoose = require("mongoose")
 
 const billSchema = mongoose.Schema({
@@ -10,6 +9,10 @@ const billSchema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Customer",
         required: true,
+    },
+    customerName:{
+        type: String, 
+        required: true
     },
     products: [{
         name: {
@@ -33,16 +36,35 @@ const billSchema = mongoose.Schema({
         type: Number,
         required: true,
     },
-    paymentMethod: {
-        type: String,
+    discount: {
+        type: Number,
+        required: true,
+        default: 0, // Default discount is 0
+    },
+    discountedAmount: {
+        type: Number,
+        required: true,
+        default: 0, // Default discounted amount is 0
+    },
+    onlineAmount: {
+        type: Number,
         required: true,
     },
-    amountReceived: {
+    cashAmount: {
         type: Number,
         required: true,
     },
     dueAmount: {
         type: Number,
+        required: true,
+    },
+    invoiceDate: { // New field for invoice date
+        type: Date,
+        required: true,
+        default: Date.now, // Default to current date
+    },
+    dueDate: { // New field for due date
+        type: Date,
         required: true,
     },
     status: { // New field for payment status

@@ -46,7 +46,7 @@ userController.registerUser = async (req, res) => {
 
 
 userController.loginUser = async(req, res) => {
-    const { email, password, mobile } = req.body
+    const { email, password} = req.body
 
     // do matched current login password and already registered password
     try {
@@ -56,9 +56,9 @@ userController.loginUser = async(req, res) => {
            return res.send({status: "err", msg: "user not found", data: null})
         }
 
-        if(loginUsers.mobile !== mobile){
-            return res.send({status: "err", msg: "mobile no. not matched", data: null})    
-        }
+        // if(loginUsers.mobile !== mobile){
+        //     return res.send({status: "err", msg: "mobile no. not matched", data: null})    
+        // }
 
 
 
@@ -66,14 +66,14 @@ userController.loginUser = async(req, res) => {
 
         if(compare){
             var token = jwttoken.sign({ _id: loginUsers._id }, process.env.TOKEN_SECRET)
-            return res.send({status:"ok",msg:"user login successfully",data:loginUsers, token: token})
+            return res.send({status:true,msg:"user login successfully",data:loginUsers, token: token})
         }else{
-            return res.send({status:"err",msg:"user not login",data:null})
+            return res.send({ status:false , msg: "login failed"})
+
         }
 
     } catch (err) {
         console.log(err)
-        return res.send({ status: "Err", msg: "something went wrong in loginUser", error: err })
     }
 
 }
