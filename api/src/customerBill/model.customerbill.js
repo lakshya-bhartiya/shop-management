@@ -72,6 +72,11 @@ const billSchema = mongoose.Schema({
         enum: ['paid', 'unpaid'], // Options for the payment status
         default: 'unpaid', // Default value
     },
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User", // Reference to the User model who created the bill
+        required: true // Ensure userId is required
+    }
 });
 
 

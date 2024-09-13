@@ -9,7 +9,7 @@ const authenticateToken = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.TOKEN_SECRET);
-    req.userId = decoded._id; // Attach user ID to the request object
+    req._id = decoded._id; // Attach user ID to the request object
     next();
   } catch (error) {
     return res.status(401).send({ status: 'ERR', message: 'Unauthorized access' });

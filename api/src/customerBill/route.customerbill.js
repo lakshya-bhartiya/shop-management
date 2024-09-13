@@ -11,6 +11,6 @@ router.post("/createBill",validate(billValidationSchema),authanticationToken, bi
 router.get("/getBills",authanticationToken, billController.getBills)
 router.delete("/deleteBills/:id",authanticationToken, billController.deleteCustomerBills)
 router.get("/getCustomerBill/:invoiceNumber", authanticationToken, billController.getBillByInvoice)
-// router.patch("/editBill/:invoiceNumber", authanticationToken, billController.editBill)
+router.patch("/editBill/:invoiceNumber",validate(billValidationSchema), authanticationToken, billController.editBill)
 
 module.exports = router

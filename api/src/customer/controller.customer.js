@@ -2,55 +2,72 @@ const customerService = require("./service.customer");
 
 const customerController = {};
 
+// Create a new customer
 customerController.createCustomer = async (req, res) => {
-  try {
-    const newCustomer = await customerService.createCustomer(req.body);
-    res.status(201).json({ status: "OK", msg: "Customer created successfully", data: newCustomer });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ status: "ERR", msg: "Something went wrong", error: error.message });
-  }
+    const { name, address, mobile } = req.body;
+    const userId = req._id; // Ensure this is set by your authentication middleware
+
+    // Validate that all required fields are present
+    if (!name || !address || !mobile) {
+        return res.status(400).json({
+            status: "ERR",
+            msg: "All fields (name, address, mobile) are required."
+        });
+    }
+
+    try {
+        const newCustomer = await customerService.createCustomer({ userId, name, address, mobile });
+        res.status(201).json({ status: "OK", msg: "Customer created successfully", data: newCustomer });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ status: "ERR", msg: "Something went wrong", error: error.message });
+    }
 };
 
-// customerController.getCustomerBill = async (req, res) => {
-//   const { id } = req.params; // Get customer ID from route parameters
-//   console.log(id, "sdfghj")
-//   try {
-//       const bills = await customerService.getCustomerBillById({id});
-//       console.log(bills, "bills")
-//       if (!bills) {
-//           return res.status(404).json({ status: "ERR", msg: "No bills found for this customer." });
-//       }
-//       res.status(200).json({ status: "OK", data: bills });
-//   } catch (error) {
-//       console.error(error);
-//       res.status(500).json({ status: "ERR", msg: "Something went wrong", error: error.message });
-//   }
-// }
-
+// Get all customers
 customerController.getCustomers = async (req, res) => {
-  try{
-    const getAllCustomers = await customerService.getAllCustomer()
-    res.send({status: "ok", data: getAllCustomers})
-  }catch(err){
-    console.log(err)
-  }
-}
-
-customerController.deleteCustomer = async (req, res) => {
-  const { id } = req.params
-  try {
-    const deleteCustomer = await customerService.DeleteCustomer(id, { $set: { isDeleted: true } })
-    if (deleteCustomer === null) {
-      return res.send({ status: "err", msg: "data not found", data: null })
-    } else {
-      return res.send({ status: "ok", msg: "user deleted", error: null, data: deleteBills })
+    const userId = req._id; // Ensure this is set by your authentication middleware
+    try {
+        const getAllCustomers = await customerService.getAllCustomer(userId);
+        res.status(200).json({ status: "OK", data: getAllCustomers });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ status: "ERR", msg: "Something went wrong", data: null });
     }
-  } catch (err) {
+};
 
-    console.log(err, "delete err")
-    return res.send({ status: "err", msg: "data not deleted", error: err })
-  }
-}
+// Soft delete a customer
+customerController.deleteCustomer = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const deletedCustomer = await customerService.deleteCustomer(id);
+        if (!deletedCustomer) {
+            return res.status(404).json({ status: "ERR", msg: "Customer not found" });
+        }
+        res.status(200).json({ status: "OK", msg: "Customer deleted successfully" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ status: "ERR", msg: "Something went wrong", error: err.message });
+    }
+};
+
+// Edit customer details
+customerController.editCustomer = async (req, res) => {
+    const { id } = req.params; // Get customer ID from request parameters
+    const { name, address, mobile } = req.body; // Get updated data from request body
+
+    try {
+        const updatedCustomer = await customerService.editCustomer(id, { name, address, mobile });
+
+        if (!updatedCustomer) {
+            return res.status(404).json({ status: "ERR", msg: "Customer not found" });
+        }
+
+        res.status(200).json({ status: "OK", msg: "Customer updated successfully", data: updatedCustomer });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ status: "ERR", msg: "Something went wrong", error: error.message });
+    }
+};
 
 module.exports = customerController;

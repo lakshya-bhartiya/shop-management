@@ -32,10 +32,8 @@ userController.registerUser = async (req, res) => {
 
         if(createdUser){
             var token = jwttoken.sign({ _id: createdUser._id }, process.env.TOKEN_SECRET)
-            return res.send({ status: "OK ", msg: "user registered successfully", data: createdUser, token: token });
+            return res.send({ status: "OK ", msg: "user registered successfully", data:{createdUser, token: token}});
         }
-
-        return res.send({ status: "OK ", msg: "user registered successfully", data: createdUser });
 
     } catch (error) {
 
@@ -53,7 +51,7 @@ userController.loginUser = async(req, res) => {
         const loginUsers = await userService.findUserByEmail(email)
 
         if(!loginUsers){
-           return res.send({status: "err", msg: "user not found", data: null})
+           return res.send({status: false, msg: "user not found", data: null})
         }
 
         // if(loginUsers.mobile !== mobile){

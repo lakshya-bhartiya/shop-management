@@ -5,7 +5,8 @@ const router = express.Router();
 
 router.post("/createCustomer",authanticationToken, customerController.createCustomer);
 router.get("/getAllCustomer",authanticationToken, customerController.getCustomers)
-router.delete("deleteCustomer/:id", authanticationToken, customerController.deleteCustomer)
+router.delete("/deleteCustomer/:id", authanticationToken, customerController.deleteCustomer)
+router.patch("/editCustomer/:id", authanticationToken, customerController.editCustomer)
 // router.get("/getCustomerBill/:id",authanticationToken, customerController.getCustomerBill)
 
 module.exports = router;

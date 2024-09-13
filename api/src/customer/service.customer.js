@@ -2,23 +2,33 @@ const Customer = require("./model.customer");
 
 const customerService = {};
 
-customerService.createCustomer = async (customerData) => {
-  return await Customer.create(customerData);
+// Create a new customer
+customerService.createCustomer = async ({ userId, name, address, mobile }) => {
+    return await Customer.create({ userId, name, address, mobile });
 };
 
-customerService.getAllCustomer = async() => {
-  return await Customer.find({})
-}
+// Get all customers for a specific user
+customerService.getAllCustomer = async (userId) => {
+    return await Customer.find({ userId, isDeleted: false });
+};
 
-customerService.getCustomerBillById = async (id) => {
-  return await Customer.findOne({ id });
-}
-
+// Get a customer by mobile number
 customerService.getCustomerByMobile = async (mobile) => {
-  return await Customer.findOne({ mobile });
+    return await Customer.findOne({ mobile });
 };
-customerService.DeleteCustomer = async (id, updateField,) => {
-  return Bill.findByIdAndUpdate({ _id: id }, { ...updateField }, { new: true })
-}
+
+// Soft delete a customer
+customerService.deleteCustomer = async (id) => {
+    return await Customer.findByIdAndUpdate(id, { isDeleted: true }, { new: true });
+};
+
+// Edit customer details
+customerService.editCustomer = async (id, updateData) => {
+    return await Customer.findByIdAndUpdate(
+        id,
+        { ...updateData },
+        { new: true, runValidators: true } // Return the updated document and run validators
+    );
+};
 
 module.exports = customerService;

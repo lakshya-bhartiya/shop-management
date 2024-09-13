@@ -49,7 +49,7 @@ const registerValidationSchema = Joi.object({
 });
 
 
-const loginValidationSchema = Joi.object({
+ loginValidationSchema = Joi.object({
     email: Joi.string()
         .email()
         .required()

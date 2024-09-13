@@ -1,3 +1,4 @@
+
 const mongoose = require("mongoose");
 
 const customerSchema = mongoose.Schema({
@@ -14,6 +15,15 @@ const customerSchema = mongoose.Schema({
     required: true,
     unique: true,
   },
+  isDeleted: {
+    type: Boolean,
+    default: false
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "user",
+    required: true,
+},
 });
 
 module.exports = mongoose.model("Customer", customerSchema);
