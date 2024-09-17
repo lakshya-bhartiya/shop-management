@@ -13,7 +13,6 @@ const customerSchema = mongoose.Schema({
   mobile: {
     type: String,
     required: true,
-    unique: true,
   },
   isDeleted: {
     type: Boolean,

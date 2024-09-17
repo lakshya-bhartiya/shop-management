@@ -3,8 +3,11 @@ const vendorService = require("./service.vendor");
 const vendorController = {};
 
 vendorController.createvendor = async (req, res) => {
+  const {name, address, mobile} = req.body
+
+  const userId = req._id
   try {
-    const newvendor = await vendorService.createVendor(req.body);
+    const newvendor = await vendorService.createVendor({name, address, mobile, userId});
     res.send({ status: true, msg: "vendor created successfully", data: newvendor });
   } catch (error) {
     console.error(error);

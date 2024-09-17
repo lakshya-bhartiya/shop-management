@@ -9,18 +9,31 @@ customerController.createCustomer = async (req, res) => {
 
     // Validate that all required fields are present
     if (!name || !address || !mobile) {
-        return res.status(400).json({
-            status: "ERR",
+        return res.send({
+            status: false,
             msg: "All fields (name, address, mobile) are required."
         });
     }
 
+    const existingCustomer = await customerService.getCustomerByMobile(mobile)
+    console.log(existingCustomer)
+    if (existingCustomer) {
+        if (existingCustomer.isDeleted) {
+            // Reactivate the deleted customer
+            existingCustomer.isDeleted = false; // Set isDeleted to false
+            existingCustomer.name = name; // Update name if provided
+            existingCustomer.address = address; // Update address if provided // Save changes and return reactivated customer
+            return res.send({status : true, msg: "customer created successfully"})
+        } else {
+            return res.send({status : false, msg: "customer is already exist"})
+        }
+    }
     try {
         const newCustomer = await customerService.createCustomer({ userId, name, address, mobile });
-        res.status(201).json({ status: "OK", msg: "Customer created successfully", data: newCustomer });
+        res.send({ status: true, msg: "Customer created successfully", data: newCustomer });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ status: "ERR", msg: "Something went wrong", error: error.message });
+        res.send({ status: false, msg: "Something went wrong", error: error.message });
     }
 };
 
@@ -29,10 +42,10 @@ customerController.getCustomers = async (req, res) => {
     const userId = req._id; // Ensure this is set by your authentication middleware
     try {
         const getAllCustomers = await customerService.getAllCustomer(userId);
-        res.status(200).json({ status: "OK", data: getAllCustomers });
+        res.send({ status: true, data: getAllCustomers });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ status: "ERR", msg: "Something went wrong", data: null });
+        res.send({ status: false, msg: "Something went wrong", data: null });
     }
 };
 
@@ -42,12 +55,12 @@ customerController.deleteCustomer = async (req, res) => {
     try {
         const deletedCustomer = await customerService.deleteCustomer(id);
         if (!deletedCustomer) {
-            return res.status(404).json({ status: "ERR", msg: "Customer not found" });
+            return res.send({ status: false, msg: "Customer not found" });
         }
-        res.status(200).json({ status: "OK", msg: "Customer deleted successfully" });
+        res.send({ status: true, msg: "Customer deleted successfully" });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ status: "ERR", msg: "Something went wrong", error: err.message });
+        res.send({ status: false, msg: "Something went wrong", error: err.message });
     }
 };
 
@@ -60,13 +73,13 @@ customerController.editCustomer = async (req, res) => {
         const updatedCustomer = await customerService.editCustomer(id, { name, address, mobile });
 
         if (!updatedCustomer) {
-            return res.status(404).json({ status: "ERR", msg: "Customer not found" });
+            return res.send({ status: false, msg: "Customer not found" });
         }
 
-        res.status(200).json({ status: "OK", msg: "Customer updated successfully", data: updatedCustomer });
+        res.send({ status: true, msg: "Customer updated successfully", data: updatedCustomer });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ status: "ERR", msg: "Something went wrong", error: error.message });
+        res.send({ status: false, msg: "Something went wrong", error: error.message });
     }
 };
 

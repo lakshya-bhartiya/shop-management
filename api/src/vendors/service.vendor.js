@@ -1,4 +1,4 @@
-const Vendor = require("./model.vendor");
+const Vendor = require("./vendor.model");
 
 const vendorService = {};
 
