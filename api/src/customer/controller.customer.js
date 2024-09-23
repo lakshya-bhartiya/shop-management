@@ -8,24 +8,25 @@ customerController.createCustomer = async (req, res) => {
     const userId = req._id; // Ensure this is set by your authentication middleware
 
     // Validate that all required fields are present
-    if (!name || !address || !mobile) {
-        return res.send({
-            status: false,
-            msg: "All fields (name, address, mobile) are required."
-        });
-    }
+    // if (!name || !address || !mobile) {
+    //     return res.send({
+    //         status: false,
+    //         msg: "All fields (name, address, mobile) are required."
+    //     });
+    // }
 
     const existingCustomer = await customerService.getCustomerByMobile(mobile)
-    console.log(existingCustomer)
+    console.log(existingCustomer, "before")
     if (existingCustomer) {
         if (existingCustomer.isDeleted) {
             // Reactivate the deleted customer
             existingCustomer.isDeleted = false; // Set isDeleted to false
             existingCustomer.name = name; // Update name if provided
-            existingCustomer.address = address; // Update address if provided // Save changes and return reactivated customer
-            return res.send({status : true, msg: "customer created successfully"})
+            existingCustomer.address = address;
+            console.log(existingCustomer, "after") // Update address if provided // Save changes and return reactivated customer
+            return res.send({status : true, msg: "customer created successfully", data: existingCustomer})
         } else {
-            return res.send({status : false, msg: "customer is already exist"})
+            return res.send({status : false, msg: "customer is already exist", data: null})
         }
     }
     try {

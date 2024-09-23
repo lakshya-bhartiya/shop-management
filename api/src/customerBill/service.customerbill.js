@@ -6,7 +6,7 @@ const InvoiceCounter = require("../../helper/model.invoiceConter")
 const billService = {}
 
 billService.createBill = async (invoiceData) => {
-  const { customer, customerName, products, onlineAmount, cashAmount, discount, dueDate, invoiceDate, userId } = invoiceData;
+  const { customer, customerName, customerMobile, products, onlineAmount, cashAmount, discount, dueDate, invoiceDate, userId } = invoiceData;
 
   // Increment the invoice counter to generate a new invoice number
   let invoiceCounter = await InvoiceCounter.findOneAndUpdate(
@@ -44,6 +44,7 @@ billService.createBill = async (invoiceData) => {
       invoiceNumber,
       customer: existingCustomer._id,
       customerName,
+      customerMobile,
       products: updatedProducts,
       totalAmount,
       discount,

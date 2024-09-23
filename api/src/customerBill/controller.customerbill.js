@@ -7,11 +7,13 @@ billController.createBill = async (req, res) => {
   const { customer, products, onlineAmount, cashAmount, discount, dueDate, invoiceDate } = req.body;
   const userId = req._id; // Get the user ID from the authenticated request
   const customerName = customer.name;
+  const customerMobile = customer.mobile
 
   try {
       const newBill = await billService.createBill({
           customer,
           customerName,
+          customerMobile,
           products,
           onlineAmount,
           cashAmount,
@@ -30,7 +32,6 @@ billController.createBill = async (req, res) => {
 
 billController.getBills = async (req, res) => {
 
-  // const { invoiceNumber, customer, amount, status } = req.query
   const userId = req._id
   try {
     const getAllBills = await billService.getAllBills(userId)

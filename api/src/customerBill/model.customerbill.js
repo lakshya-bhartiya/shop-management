@@ -14,6 +14,10 @@ const billSchema = mongoose.Schema({
         type: String, 
         required: true
     },
+    customerMobile: {
+        type: String,
+        required: true
+    },
     products: [{
         name: {
             type: String,

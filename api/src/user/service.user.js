@@ -20,7 +20,4 @@ userService.findUserByMobile = async(mobile) => {
     const users = await user.findOne({mobile})
     return users
 }
-
-
-
 module.exports = userService
