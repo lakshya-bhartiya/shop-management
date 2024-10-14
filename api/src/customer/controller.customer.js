@@ -5,28 +5,22 @@ const customerController = {};
 // Create a new customer
 customerController.createCustomer = async (req, res) => {
     const { name, address, mobile } = req.body;
-    const userId = req._id; // Ensure this is set by your authentication middleware
-
-    // Validate that all required fields are present
-    // if (!name || !address || !mobile) {
-    //     return res.send({
-    //         status: false,
-    //         msg: "All fields (name, address, mobile) are required."
-    //     });
-    // }
+    const { isDeleted } = req.query
+    const userId = req._id;
 
     const existingCustomer = await customerService.getCustomerByMobile(mobile)
     console.log(existingCustomer, "before")
     if (existingCustomer) {
         if (existingCustomer.isDeleted) {
+            console.log(existingCustomer._id, "after") // Update address if provided // Save changes and return reactivated customer
             // Reactivate the deleted customer
+            customerService.editCustomer(existingCustomer._id, { isDeleted: false })
             existingCustomer.isDeleted = false; // Set isDeleted to false
             existingCustomer.name = name; // Update name if provided
             existingCustomer.address = address;
-            console.log(existingCustomer, "after") // Update address if provided // Save changes and return reactivated customer
-            return res.send({status : true, msg: "customer created successfully", data: existingCustomer})
+            return res.send({ status: true, msg: "customer created successfully", data: existingCustomer })
         } else {
-            return res.send({status : false, msg: "customer is already exist", data: null})
+            return res.send({ status: false, msg: "customer is already exist", data: null })
         }
     }
     try {
@@ -49,6 +43,23 @@ customerController.getCustomers = async (req, res) => {
         res.send({ status: false, msg: "Something went wrong", data: null });
     }
 };
+
+
+customerController.getSingleCustomer = async (req, res) => {
+    const { id } = req.params
+    try {
+        const getSingleCustomer = await customerService.getSingleCustomer(id);
+
+        if (!getSingleCustomer || getSingleCustomer.isDeleted) {
+            return res.send({ msg: "customer not found or has been deleted", data: null, status: false });
+        }
+
+        return res.send({ status: true, msg: "customer data retrieved", data: getSingleCustomer });
+    } catch (err) {
+        console.log(err);
+        return res.send({ status: false, data: [], error: err });
+    }
+}
 
 // Soft delete a customer
 customerController.deleteCustomer = async (req, res) => {
@@ -81,6 +92,19 @@ customerController.editCustomer = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.send({ status: false, msg: "Something went wrong", error: error.message });
+    }
+};
+
+
+// Get total customer count
+customerController.getCustomerCount = async (req, res) => {
+    const userId = req._id; // Ensure this is set by your authentication middleware
+    try {
+        const customerCount = await customerService.countCustomers(userId);
+        res.send({ status: true, msg: "Customer count retrieved successfully", data: { count: customerCount } });
+    } catch (err) {
+        console.error(err);
+        res.send({ status: false, msg: "Something went wrong", data: null });
     }
 };
 

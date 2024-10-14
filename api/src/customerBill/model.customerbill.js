@@ -1,87 +1,72 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
-const billSchema = mongoose.Schema({
-    invoiceNumber: {
-        type: String,
-        required: true,
-    },
-    customer: {
+const billSchema = new mongoose.Schema({
+  invoiceNumber: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  invoiceDate: {
+    type: Date,
+    default: Date.now,
+  },
+  customerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Customer",
+    required: true,
+  },
+  products: [
+    {
+      productId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Customer",
+        ref: "Product",
         required: true,
-    },
-    customerName:{
-        type: String, 
-        required: true
-    },
-    customerMobile: {
-        type: String,
-        required: true
-    },
-    products: [{
-        name: {
-            type: String,
-            required: true,
-        },
-        price: {
-            type: Number,
-            required: true,
-        },
-        quantity: {
-            type: Number,
-            required: true,
-        },
-        total: {
-            type: Number,
-            required: true,
-        }
-    }],
-    totalAmount: {
+      },
+      quantity: {
         type: Number,
         required: true,
+      },
     },
-    discount: {
-        type: Number,
-        required: true,
-        default: 0, // Default discount is 0
+  ],
+  totalAmount: {
+    type: Number,
+    required: true,
+  },
+  discountAmount: {
+    type: Number,
+    default: 0,
+  },
+  discountedAmount: {
+    type: Number,
+    required: true,
+  },
+  onlineAmount: {
+    type: Number,
+    default: 0,
+  },
+  cashAmount: {
+    type: Number,
+    default: 0,
+  },
+  dueAmount: {
+    type: Number,
+    default: 0,
+  },
+  dueDate: {
+    type: Date,
+    required: function () {
+      return this.dueAmount > 0;
     },
-    discountedAmount: {
-        type: Number,
-        required: true,
-        default: 0, // Default discounted amount is 0
-    },
-    onlineAmount: {
-        type: Number,
-        required: true,
-    },
-    cashAmount: {
-        type: Number,
-        required: true,
-    },
-    dueAmount: {
-        type: Number,
-        required: true,
-    },
-    invoiceDate: { // New field for invoice date
-        type: Date,
-        required: true,
-        default: Date.now, // Default to current date
-    },
-    dueDate: { // New field for due date
-        type: Date,
-        required: true,
-    },
-    status: { // New field for payment status
-        type: String,
-        enum: ['paid', 'unpaid'], // Options for the payment status
-        default: 'unpaid', // Default value
-    },
-    userId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User", // Reference to the User model who created the bill
-        required: true // Ensure userId is required
-    }
-});
+  },
+  status: {
+    type: String,
+    enum: ["Paid", "Unpaid"],
+    default: "Unpaid",
+  },
+  isDeleted: {
+    type: Boolean,
+    default: false,
+  },
+}, { timestamps: true });
 
-
-module.exports = mongoose.model("Bill", billSchema)
+module.exports = mongoose.model("Bill", billSchema);

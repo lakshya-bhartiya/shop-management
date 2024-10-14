@@ -26,6 +26,7 @@ const productValidationSchema = Joi.object({
             'string.empty': `"productCode" cannot be an empty field`,
             'any.required': `"productCode" is a required field`
         }),
+    categoryId: Joi.string().required().regex(/^[0-9a-fA-F]{24}$/),
 });
 
 module.exports = productValidationSchema;

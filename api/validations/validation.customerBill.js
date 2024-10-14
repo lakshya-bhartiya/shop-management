@@ -8,29 +8,7 @@ const billValidationSchema = Joi.object({
             "string.empty": "Invoice number is required.",
             "any.required": "Invoice number is required."
         }),
-    customer: Joi.object({
-        name: Joi.string()
-            .min(3)
-            .max(50)
-            .messages({
-                "string.base": "Name should be a string.",
-                "string.empty": "Name is required.",
-                "string.min": "Name should have at least 3 characters.",
-                "string.max": "Name should have at most 50 characters.",
-                "any.required": "Name is required."
-            }),
-        address: Joi.string(),
-        mobile: Joi.string()
-            .pattern(/^[0-9]+$/) // Only allows digits
-            .length(10) // Assumes mobile number is 10 digits long
-            .messages({
-                "string.base": "Mobile should be a string of digits.",
-                "string.empty": "Mobile number is required.",
-                "string.pattern.base": "Mobile number should contain only digits.",
-                "string.length": "Mobile number should be exactly 10 digits.",
-                "any.required": "Mobile number is required."
-            }),
-    }),
+    customerId: Joi.string().required().regex(/^[0-9a-fA-F]{24}$/),
     products: Joi.array().items(
         Joi.object({
             name: Joi.string()

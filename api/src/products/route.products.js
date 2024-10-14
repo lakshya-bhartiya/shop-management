@@ -1,17 +1,23 @@
+// routes.product.js
 const express = require("express");
 const productController = require("./controller.product");
-const authanticationToken = require("../../middleware/authHelper")
-const validate = require("../../middleware/middleware.validation")
-const productValidationSchema = require("../../validations/validation.product")
+const authenticationToken = require("../../middleware/authHelper");
+const validate = require("../../middleware/middleware.validation");
+const productValidationSchema = require("../../validations/validation.product");
 
 const router = express.Router();
 
-// Route to create a new product
-router.post("/addProducts",validate(productValidationSchema), authanticationToken, productController.createProduct);
+// Route to create a new product with category association
+router.post("/addProducts", validate(productValidationSchema), authenticationToken, productController.createProduct);
 
 // Route to get all products
-router.get("/getProducts",authanticationToken, productController.getProducts);
+router.get("/getProducts", authenticationToken, productController.getProducts);
 
-router.patch("/editProduct/:id",validate(productValidationSchema), authanticationToken, productController.editProduct)
+// Route to edit a product
+router.patch("/editProduct/:id", validate(productValidationSchema), authenticationToken, productController.editProduct);
+
+router.delete("/deleteProduct/:id", authenticationToken, productController.deleteProduct)
+
+router.get("/getSingleProduct/:id", authenticationToken, productController.getSingleProduct)
 
 module.exports = router;

@@ -35,17 +35,12 @@ const registerValidationSchema = Joi.object({
             "any.only": "Confirm password must match the password.",
             "any.required": "Confirm password is required."
         }),
-    mobile: Joi.string()
-        .pattern(/^[0-9]+$/)
-        .length(10)
+        mobile: Joi.string()
+        .pattern(/^[6-9]\d{9}$/) // Ensures mobile starts with 6, 7, 8, or 9 and is 10 digits long
         .required()
         .messages({
-            "string.base": "Mobile should be a string of digits.",
-            "string.empty": "Mobile number is required.",
-            "string.pattern.base": "Mobile number should contain only digits.",
-            "string.length": "Mobile number should be exactly 10 digits.",
-            "any.required": "Mobile number is required."
-        })
+            "string.pattern.base": "Mobile number must start with 6, 7, 8, or 9 and be 10 digits long",
+        }),
 });
 
 

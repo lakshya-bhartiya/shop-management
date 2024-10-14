@@ -17,6 +17,11 @@ customerService.getCustomerByMobile = async (mobile) => {
     return await Customer.findOne({ mobile });
 };
 
+customerService.getSingleCustomer = async (id) => {
+    const singleCustomer = await Customer.findById(id)
+    return singleCustomer
+}
+
 // Soft delete a customer
 customerService.deleteCustomer = async (id) => {
     return await Customer.findByIdAndUpdate(id, { isDeleted: true }, { new: true });
@@ -29,6 +34,10 @@ customerService.editCustomer = async (id, updateData) => {
         { ...updateData },
         { new: true, runValidators: true } // Return the updated document and run validators
     );
+};
+
+customerService.countCustomers = async (userId) => {
+    return await Customer.countDocuments({ userId, isDeleted: false });
 };
 
 module.exports = customerService;

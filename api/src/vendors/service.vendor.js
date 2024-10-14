@@ -2,32 +2,43 @@ const Vendor = require("./vendor.model");
 
 const vendorService = {};
 
-vendorService.createVendor = async (vendorData) => {
-  return await Vendor.create(vendorData);
+// Create a new vendor
+vendorService.createVendor = async ({ userId, name, address, mobile }) => {
+    return await Vendor.create({ userId, name, address, mobile });
 };
 
-vendorService.getAllVendor = async() => {
-  return await Vendor.find({isDeleted: false})
-}
+// Get all vendors for a specific user
+vendorService.getAllVendors = async (userId) => {
+    return await Vendor.find({ userId, isDeleted: false });
+};
 
-// vendorService.getvendorBillById = async (id) => {
-//   return await Vendor.findOne({ id });
-// }
-
+// Get a vendor by mobile number
 vendorService.getVendorByMobile = async (mobile) => {
-  return await Vendor.findOne({ mobile });
+    return await Vendor.findOne({ mobile });
 };
-vendorService.DeleteVendor = async (id, updateField,) => {
-  return await Vendor.findByIdAndUpdate({ _id: id }, { ...updateField }, { new: true })
-}
 
+// Get a single vendor by ID
+vendorService.getSingleVendor = async (id) => {
+    return await Vendor.findById(id);
+};
+
+// Soft delete a vendor (mark as deleted)
+vendorService.deleteVendor = async (id) => {
+    return await Vendor.findByIdAndUpdate(id, { isDeleted: true }, { new: true });
+};
+
+// Edit vendor details
 vendorService.editVendor = async (id, updateData) => {
-      const updatedVendor = await Vendor.findByIdAndUpdate(
-          {_id: id},
-          {...updateData},
-          { new: true, runValidators: true } // Return the updated document and run validators
-      );
-      return updatedVendor;
+    return await Vendor.findByIdAndUpdate(
+        id,
+        { ...updateData },
+        { new: true, runValidators: true } // Return the updated document and run validators
+    );
+};
+
+// Get vendor count
+vendorService.countVendors = async (userId) => {
+    return await Vendor.countDocuments({ userId, isDeleted: false });
 };
 
 module.exports = vendorService;

@@ -1,126 +1,188 @@
 const Bill = require("./model.customerbill");
-const Customer = require("../customer/model.customer")
+const Product = require("../products/model.product");
 
-const InvoiceCounter = require("../../helper/model.invoiceConter")
+const billService = {};
 
-const billService = {}
+// Create a new bill
+billService.createBill = async (billData) => {
+  const { customerId, products, discountAmount, onlineAmount, cashAmount, dueDate } = billData;
 
-billService.createBill = async (invoiceData) => {
-  const { customer, customerName, customerMobile, products, onlineAmount, cashAmount, discount, dueDate, invoiceDate, userId } = invoiceData;
-
-  // Increment the invoice counter to generate a new invoice number
-  let invoiceCounter = await InvoiceCounter.findOneAndUpdate(
-      {},
-      { $inc: { sequenceValue: 1 } },
-      { new: true, upsert: true }
-  );
-
-  const invoiceNumber = "INV" + invoiceCounter.sequenceValue;
-
-  // Check if the customer already exists
-  let existingCustomer = await Customer.findOne({ mobile: customer.mobile });
-
-  // If the customer doesn't exist, create a new customer with userId
-  if (!existingCustomer) {
-      existingCustomer = await Customer.create({ ...customer, userId }); // Include userId here
+  // Calculate total amount based on product prices and quantities
+  let totalAmount = 0;
+  for (const product of products) {
+    const productData = await Product.findById(product.productId);
+    if (!productData) throw new Error(`Product with ID ${product.productId} not found.`);
+    
+    totalAmount += productData.sellingPrice * product.quantity;
   }
 
-  let totalAmount = 0;
-  const updatedProducts = products.map(product => {
-      const total = product.price * product.quantity; // Calculate total for each product
-      totalAmount += total; // Add to overall total
-      return { ...product, total }; // Update product with calculated total
-  });
+  const discountedAmount = totalAmount - discountAmount;
+  const totalReceivedAmount = onlineAmount + cashAmount;
+  const dueAmount = discountedAmount - totalReceivedAmount;
 
-  // Calculate total amount and due amount
-  const discountedAmount = totalAmount - discount;
-  const totalAmountReceived = onlineAmount + cashAmount;
-  const dueAmount = discountedAmount - totalAmountReceived;
+  const invoiceNumber = `INV-${Date.now()}`;
 
-  const status = dueAmount <= 0 ? 'paid' : 'unpaid';
-
-  // Create the bill
   const newBill = await Bill.create({
-      invoiceNumber,
-      customer: existingCustomer._id,
-      customerName,
-      customerMobile,
-      products: updatedProducts,
-      totalAmount,
-      discount,
-      discountedAmount,
-      onlineAmount,
-      cashAmount,
-      dueAmount,
-      invoiceDate,
-      dueDate,
-      status,
-      userId // Associate the bill with the user who created it
+    invoiceNumber,
+    customerId,
+    products,
+    totalAmount,
+    discountAmount,
+    discountedAmount,
+    onlineAmount,
+    cashAmount,
+    dueAmount,
+    dueDate: dueAmount > 0 ? dueDate : null,
+    status: dueAmount > 0 ? "Unpaid" : "Paid",
   });
 
   return newBill;
 };
 
-
-
-billService.getAllBills = async (userId) => {
-  let bills = await Bill.find({userId})
-  return bills
-}
-
-billService.getBillByInvoiceNo = async (invoiceNumber) => {
-  const billByInvoice = await Bill.findOne({ invoiceNumber })
-  return billByInvoice
-}
-
-billService.editBill = async (invoiceNumber, { customer, products, discount, onlineAmount, cashAmount, dueDate }) => {
-  const existingBill = await Bill.findOne({ invoiceNumber });
-
-  if (!existingBill) {
-      throw new Error("Bill not found");
+// Get a single bill by ID
+billService.getBillById = async (billId) => {
+  const bill = await Bill.findById(billId).populate("customerId").populate("products.productId");
+  if (!bill || bill.isDeleted) {
+    throw new Error("Bill not found or has been deleted.");
   }
-
-  // Update the bill fields
-  existingBill.customerName = customer.name; // Update customer name
-  existingBill.customerMobile = customer.mobile; // Update customer mobile
-
-  // Calculate total for each product and update products
-  let totalAmount = 0;
-  const updatedProducts = products.map(product => {
-      const total = product.price * product.quantity; // Calculate total for each product
-      totalAmount += total; // Add to overall total
-      return { ...product, total }; // Include total in the product object
-  });
-
-  existingBill.products = updatedProducts; // Update products
-  existingBill.discount = discount; // Update discount
-  existingBill.onlineAmount = onlineAmount; // Update online amount
-  existingBill.cashAmount = cashAmount; // Update cash amount
-  existingBill.dueDate = dueDate; // Update due date
-
-  // Calculate the discounted amount and due amount
-  const discountedAmount = totalAmount - discount;
-  const totalAmountReceived = onlineAmount + cashAmount;
-  const dueAmount = discountedAmount - totalAmountReceived;
-
-  // Update the status based on the due amount
-  existingBill.status = dueAmount <= 0 ? 'paid' : 'unpaid';
-  existingBill.totalAmount = totalAmount; // Update total amount
-  existingBill.discountedAmount = discountedAmount; // Update discounted amount
-  existingBill.dueAmount = dueAmount; // Update due amount
-
-  // Save the updated bill
-  const updatedBill = await existingBill.save();
-  return updatedBill;
-
+  return bill;
 };
 
-billService.DeleteBills = async (id, updateField,) => {
-  return Bill.findByIdAndUpdate({ _id: id }, { ...updateField }, { new: true })
-}
+// Get all bills
+billService.getAllBills = async () => {
+  const bills = await Bill.find({ isDeleted: false }).populate("customerId").populate("products.productId");
+  return bills;
+};
 
+// Update a bill by ID
+billService.updateBill = async (id, updateData) => {
+  const updatedBill = await Bill.findByIdAndUpdate(id, updateData, { new: true, runValidators: true, isDeleted: false})
+  return updatedBill
+};
 
+// Delete (soft delete) a bill by ID
+billService.deleteBill = async (billId) => {
+  const bill = await Bill.findById(billId);
+  if (!bill || bill.isDeleted) {
+    throw new Error("Bill not found or has been deleted.");
+  }
 
+  // Soft delete the bill
+  bill.isDeleted = true;
+  await bill.save();
 
-module.exports = billService
+  return { msg: "Bill has been deleted successfully" };
+};
 
+// Add this function in your billService
+billService.getTotalReceivedAmount = async (period) => {
+    const now = new Date();
+    let startDate;
+  
+    switch (period) {
+      case 'day':
+        startDate = new Date(now.setDate(now.getDate() - 1));
+        break;
+      case 'week':
+        startDate = new Date(now.setDate(now.getDate() - 7));
+        break;
+      case 'month':
+        startDate = new Date(now.setMonth(now.getMonth() - 1));
+        break;
+      case 'year':
+        startDate = new Date(now.setFullYear(now.getFullYear() - 1));
+        break;
+      default:
+        throw new Error("Invalid period specified");
+    }
+  
+    const bills = await Bill.find({
+      createdAt: { $gte: startDate, $lte: new Date() },
+      isDeleted: false,
+    });
+  
+    const totalReceivedAmount = bills.reduce((total, bill) => {
+      return total + (bill.onlineAmount + bill.cashAmount);
+    }, 0);
+  
+    return totalReceivedAmount;
+  };
+
+  // Add this function in your billService
+billService.getTotalBillCount = async (period) => {
+    const now = new Date();
+    let startDate;
+  
+    switch (period) {
+      case 'day':
+        startDate = new Date(now.setDate(now.getDate() - 1));
+        break;
+      case 'week':
+        startDate = new Date(now.setDate(now.getDate() - 7));
+        break;
+      case 'month':
+        startDate = new Date(now.setMonth(now.getMonth() - 1));
+        break;
+      case 'year':
+        startDate = new Date(now.setFullYear(now.getFullYear() - 1));
+        break;
+      default:
+        throw new Error("Invalid period specified");
+    }
+  
+    const billCount = await Bill.countDocuments({
+      createdAt: { $gte: startDate, $lte: new Date() },
+      isDeleted: false,
+    });
+  
+    return billCount;
+  };
+
+  // Add this function in your billService
+billService.getTotalBillsForCustomer = async (customerId) => {
+    const billCount = await Bill.countDocuments({
+      customerId: customerId,
+      isDeleted: false,
+    });
+  
+    return billCount;
+  };
+
+  // Add these functions in your billService
+
+// Function to get total received amount for a customer
+billService.getTotalReceivedAmountForCustomer = async (customerId) => {
+    const bills = await Bill.find({
+      customerId: customerId,
+      isDeleted: false,
+    });
+  
+    const totalReceivedAmount = bills.reduce((total, bill) => {
+      return total + (bill.onlineAmount + bill.cashAmount);
+    }, 0);
+  
+    return totalReceivedAmount;
+  };
+  
+  // Function to get total due amount for a customer
+  billService.getTotalDueAmountForCustomer = async (customerId) => {
+    const bills = await Bill.find({
+      customerId: customerId,
+      isDeleted: false,
+    });
+  
+    const totalDueAmount = bills.reduce((total, bill) => {
+      return total + bill.dueAmount;
+    }, 0);
+  
+    return totalDueAmount;
+  };
+  billService.getInvoicesForCustomer = async (customerId) => {
+    const invoices = await Bill.find({ customerId, isDeleted: false })
+      .populate("customerId", "name") // Assuming 'name' is a field in your Customer model
+      .populate("products.productId", "name sellingPrice") // Adjust fields as necessary
+      .select("invoiceNumber invoiceDate totalAmount discountAmount dueAmount status products dueDate");
+  
+    return invoices;
+  };
+module.exports = billService;

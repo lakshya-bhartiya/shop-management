@@ -9,9 +9,13 @@ const vendorSchema = mongoose.Schema({
         type: String,
         required: true,
     },
-    address : {
+    address: {
         type: String,
         required: true,
+    },
+    isDeleted: {
+        type: Boolean,
+        default: false
     },
     userId: {
         type: mongoose.Schema.Types.ObjectId,
