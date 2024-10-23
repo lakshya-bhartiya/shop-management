@@ -14,6 +14,7 @@ receivedInvoiceService.getReceivedInvoicesForCustomer = async (customerId) => {
         invoiceNumber: bill.invoiceNumber,
         customerName: customerData.name,
         receivedAmount: bill.onlineAmount + bill.cashAmount,
+        date: bill.invoiceDate,
         dueAmount: bill.dueAmount,
         totalAmount: bill.totalAmount
       };

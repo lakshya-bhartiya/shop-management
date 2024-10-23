@@ -19,7 +19,7 @@ router.post(
 router.get(
   "/getSingleBill/:billId",
   authenticationToken, // Add authentication middleware
-  billController.getBillById
+  billController.getSingleBill
 );
 
 // Get all bills for a customer

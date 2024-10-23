@@ -3,7 +3,6 @@ const categoryService = require("./service.category");
 const categoryController = {};
 
 categoryController.createCategory = async (req, res) => {
-  // Correct the typo in the variable name
   const { categoryName } = req.body;
 
   if (!categoryName) {
@@ -72,15 +71,12 @@ categoryController.editCategory = async (req, res) => {
   const { categoryName } = req.body;
 
   try {
-    // Retrieve the category to check if it's marked as deleted
     const category = await categoryService.getSingleCategory(id);
 
-    // Check if the category exists and if it is marked as deleted
     if (!category || category.isDeleted) {
       return res.send({ status: false, msg: "Category not found or has been deleted. Cannot edit this category.", data: null });
     }
 
-    // Proceed with the update if the category is not deleted
     const updated = await categoryService.editCategory(id, { categoryName });
     return res.send({ status: true, msg: "Category updated successfully", data: updated });
   } catch (err) {

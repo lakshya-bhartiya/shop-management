@@ -1,22 +1,20 @@
-const userInvoicesService = require("./service.invoiceTransaction");
+// controllers/invoiceTransactionController.js
+const invoiceTransactionService = require("./service.invoiceTransaction");
 
-const userInvoicesController = {};
+const invoiceTransactionController = {};
 
-// Get all invoices created by a specific user
-userInvoicesController.getInvoicesByUser = async (req, res) => {
-  try {
-    const { userId } = req._id; // Expecting userId as a URL parameter
-    const invoices = await userInvoicesService.getInvoicesByUser(userId);
-
-    res.send({
-      status: true,
-      msg: `Invoices fetched successfully for user ${userId}`,
-      data: invoices,
-    });
-  } catch (error) {
-    console.error(error);
-    res.send({ status: false, msg: "Failed to fetch invoices", error: error.message });
-  }
+// Controller to get all combined transactions (invoices and payments)
+invoiceTransactionController.getCombinedTransactionsByDate = async (req, res) => {
+    try {
+        const transactions = await invoiceTransactionService.getCombinedTransactionsByDate();
+        res.send({
+            status: true,
+            msg: "Combined transactions fetched successfully",
+            data: transactions,
+        });
+    } catch (error) {
+        console.error(error);
+        res.send({ status: false, msg: "Failed to fetch combined transactions", error: error.message });
+    }
 };
-
-module.exports = userInvoicesController;
+module.exports = invoiceTransactionController;

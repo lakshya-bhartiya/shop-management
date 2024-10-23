@@ -18,6 +18,10 @@ const receivedInvoiceSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  invoiceDate:{
+    type: Date,
+    required: true
+  },
   dueAmount: {
     type: Number,
     required: true

@@ -2,7 +2,6 @@ const customerService = require("./service.customer");
 
 const customerController = {};
 
-// Create a new customer
 customerController.createCustomer = async (req, res) => {
     const { name, address, mobile } = req.body;
     const { isDeleted } = req.query
@@ -12,11 +11,10 @@ customerController.createCustomer = async (req, res) => {
     console.log(existingCustomer, "before")
     if (existingCustomer) {
         if (existingCustomer.isDeleted) {
-            console.log(existingCustomer._id, "after") // Update address if provided // Save changes and return reactivated customer
-            // Reactivate the deleted customer
+            console.log(existingCustomer._id, "after") 
             customerService.editCustomer(existingCustomer._id, { isDeleted: false })
-            existingCustomer.isDeleted = false; // Set isDeleted to false
-            existingCustomer.name = name; // Update name if provided
+            existingCustomer.isDeleted = false;
+            existingCustomer.name = name
             existingCustomer.address = address;
             return res.send({ status: true, msg: "customer created successfully", data: existingCustomer })
         } else {
@@ -32,9 +30,8 @@ customerController.createCustomer = async (req, res) => {
     }
 };
 
-// Get all customers
 customerController.getCustomers = async (req, res) => {
-    const userId = req._id; // Ensure this is set by your authentication middleware
+    const userId = req._id;
     try {
         const getAllCustomers = await customerService.getAllCustomer(userId);
         res.send({ status: true, data: getAllCustomers });
@@ -61,7 +58,6 @@ customerController.getSingleCustomer = async (req, res) => {
     }
 }
 
-// Soft delete a customer
 customerController.deleteCustomer = async (req, res) => {
     const { id } = req.params;
     try {
@@ -76,10 +72,9 @@ customerController.deleteCustomer = async (req, res) => {
     }
 };
 
-// Edit customer details
 customerController.editCustomer = async (req, res) => {
-    const { id } = req.params; // Get customer ID from request parameters
-    const { name, address, mobile } = req.body; // Get updated data from request body
+    const { id } = req.params; 
+    const { name, address, mobile } = req.body; 
 
     try {
         const updatedCustomer = await customerService.editCustomer(id, { name, address, mobile });
@@ -96,9 +91,8 @@ customerController.editCustomer = async (req, res) => {
 };
 
 
-// Get total customer count
 customerController.getCustomerCount = async (req, res) => {
-    const userId = req._id; // Ensure this is set by your authentication middleware
+    const userId = req._id;
     try {
         const customerCount = await customerService.countCustomers(userId);
         res.send({ status: true, msg: "Customer count retrieved successfully", data: { count: customerCount } });

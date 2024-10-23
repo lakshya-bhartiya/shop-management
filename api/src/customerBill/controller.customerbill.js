@@ -14,9 +14,13 @@ billController.createBill = async (req, res) => {
 };
 
 // Get a bill by ID
-billController.getBillById = async (req, res) => {
+billController.getSingleBill = async (req, res) => {
+  const {billId} = req.params
   try {
-    const bill = await billService.getBillById(req.params.billId);
+    const bill = await billService.getBillById(billId);
+    console.log(bill)
+
+    console.log(bill.onlineAmount)
     res.send({ status: true, msg: "Bill fetched successfully", data: bill });
   } catch (error) {
     console.error(error);
