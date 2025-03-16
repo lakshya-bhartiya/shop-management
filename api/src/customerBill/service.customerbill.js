@@ -4,7 +4,6 @@ const Payment = require("../customerRemainingPayment/model.customerRemainingAmou
 const ReceivedAmount = require("../invoiceTransaction/model.invoiceTransaction")
 
 const billService = {};
-
 // Create a new bill
 billService.createBill = async (billData) => {
   const { customerId, products, discountAmount, onlineAmount, cashAmount, dueDate } = billData;
