@@ -7,16 +7,12 @@ vendorController.createVendor = async (req, res) => {
     const { name, address, mobile } = req.body;
     const userId = req._id;
 
-    const existingVendor = await vendorService.getVendorByMobile(mobile);
+    const existingVendor = await vendorService.getVendorByMobile(mobile, userId);
 
     if (existingVendor) {
         if (existingVendor.isDeleted) {
-            // Reactivate the deleted vendor
-            vendorService.editVendor(existingVendor._id, { isDeleted: false });
-            existingVendor.isDeleted = false;
-            existingVendor.name = name;
-            existingVendor.address = address;
-            return res.send({ status: true, msg: "Vendor created successfully", data: existingVendor });
+            const restoredVendor = await vendorService.editSoftDeletedVendor(existingVendor._id, userId, { name, address, mobile, isDeleted: false });
+            return res.send({ status: true, msg: "Vendor created successfully", data: restoredVendor });
         } else {
             return res.send({ status: false, msg: "Vendor already exists", data: null });
         }
@@ -45,9 +41,10 @@ vendorController.getVendors = async (req, res) => {
 
 // Get a single vendor
 vendorController.getSingleVendor = async (req, res) => {
+    const userId = req._id;
     const { id } = req.params;
     try {
-        const singleVendor = await vendorService.getSingleVendor(id);
+        const singleVendor = await vendorService.getSingleVendor(id, userId);
 
         if (!singleVendor || singleVendor.isDeleted) {
             return res.send({ msg: "Vendor not found or has been deleted", data: null, status: false });
@@ -62,9 +59,10 @@ vendorController.getSingleVendor = async (req, res) => {
 
 // Soft delete a vendor
 vendorController.deleteVendor = async (req, res) => {
+    const userId = req._id;
     const { id } = req.params;
     try {
-        const deletedVendor = await vendorService.deleteVendor(id);
+        const deletedVendor = await vendorService.deleteVendor(id, userId);
         if (!deletedVendor) {
             return res.send({ status: false, msg: "Vendor not found" });
         }
@@ -77,11 +75,12 @@ vendorController.deleteVendor = async (req, res) => {
 
 // Edit vendor details
 vendorController.editVendor = async (req, res) => {
+    const userId = req._id; // Assuming this is extracted from a JWT or session
     const { id } = req.params; // Get vendor ID from request parameters
     const { name, address, mobile } = req.body; // Get updated data from request body
 
     try {
-        const updatedVendor = await vendorService.editVendor(id, { name, address, mobile });
+        const updatedVendor = await vendorService.editVendor(id, userId, { name, address, mobile });
 
         if (!updatedVendor) {
             return res.send({ status: false, msg: "Vendor not found" });

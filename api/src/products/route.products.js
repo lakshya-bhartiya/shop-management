@@ -3,7 +3,7 @@ const express = require("express");
 const productController = require("./controller.product");
 const authenticationToken = require("../../middleware/authHelper");
 const validate = require("../../middleware/middleware.validation");
-const productValidationSchema = require("../../validations/validation.product");
+const {productValidationSchema, updateStockValidation} = require("../../validations/validation.product");
 
 const router = express.Router();
 
@@ -19,5 +19,9 @@ router.patch("/editProduct/:id", validate(productValidationSchema), authenticati
 router.delete("/deleteProduct/:id", authenticationToken, productController.deleteProduct)
 
 router.get("/getSingleProduct/:id", authenticationToken, productController.getSingleProduct)
+
+router.get("/countProducts", authenticationToken, productController.countProducts)
+
+router.patch("/updateStock/:id", validate(updateStockValidation), authenticationToken, productController.updateStock)
 
 module.exports = router;

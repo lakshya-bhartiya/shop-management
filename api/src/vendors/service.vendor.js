@@ -13,24 +13,24 @@ vendorService.getAllVendors = async (userId) => {
 };
 
 // Get a vendor by mobile number
-vendorService.getVendorByMobile = async (mobile) => {
-    return await Vendor.findOne({ mobile });
+vendorService.getVendorByMobile = async (mobile, userId) => {
+    return await Vendor.findOne({ mobile, userId, isDeleted: false });
 };
 
 // Get a single vendor by ID
-vendorService.getSingleVendor = async (id) => {
-    return await Vendor.findById(id);
+vendorService.getSingleVendor = async (id, userId) => {
+    return await Vendor.findOne({_id: id, userId, isDeleted: false});
 };
 
 // Soft delete a vendor (mark as deleted)
-vendorService.deleteVendor = async (id) => {
-    return await Vendor.findByIdAndUpdate(id, { isDeleted: true }, { new: true });
+vendorService.deleteVendor = async (id, userId) => {
+    return await Vendor.findByIdAndUpdate({_id: id, userId, isDeleted: false }, { isDeleted: true }, { new: true });
 };
 
 // Edit vendor details
-vendorService.editVendor = async (id, updateData) => {
+vendorService.editVendor = async (id, userId, updateData) => {
     return await Vendor.findByIdAndUpdate(
-        id,
+        {_id: id, userId, isDeleted: false },
         { ...updateData },
         { new: true, runValidators: true } // Return the updated document and run validators
     );
@@ -40,5 +40,14 @@ vendorService.editVendor = async (id, updateData) => {
 vendorService.countVendors = async (userId) => {
     return await Vendor.countDocuments({ userId, isDeleted: false });
 };
+
+vendorService.editSoftDeletedVendor = async (id, userId, updateData) => {
+    return await Vendor.findByIdAndUpdate(
+        {_id: id, userId, isDeleted: true },
+        { ...updateData },
+        { new: true, runValidators: true } // Return the updated document and run validators
+    );
+};
+
 
 module.exports = vendorService;

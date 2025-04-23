@@ -63,6 +63,11 @@ const billSchema = new mongoose.Schema({
     enum: ["Paid", "Unpaid"],
     default: "Unpaid",
   },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "user",
+    required: true,
+  },
   isDeleted: {
     type: Boolean,
     default: false,

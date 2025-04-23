@@ -14,17 +14,14 @@ categoryController.createCategory = async (req, res) => {
   const userId = req._id;
 
   try {
-
-    console.log(categoryName)
-
     const exists = await categoryService.categoryExists(categoryName, userId);
-        console.log(exists,"exist")
         if (exists) {
-            return res.send({
-                status: false,
-                msg: "Category with this  categoryName already exists",
-                data: null
-            });
+          if(exists.isDeleted){
+            const restoredCategory = await categoryService.editSoftDeletedCategory(exists._id, userId, {isDeleted: false})
+          res.send({ status: true, msg: "Category created successfully", data: restoredCategory });
+          }else{
+            return res.send({ status: false, msg: "Category already exists", data: null });
+          }
         }
     const newCategory = await categoryService.createCategory({categoryName, userId});
     return res.send({ status: true, msg: "Category created successfully", data: newCategory });
@@ -42,7 +39,7 @@ categoryController.getAllCategory = async (req, res) => {
         if (getAllCategory.length) {
             return res.send({ status: true, msg:"all category data getted",data:getAllCategory })
         }
-        return res.send({ msg: "notes are not found", data: null, status: false })
+        return res.send({ msg: "categories are not found", data: null, status: false })
     }catch(err){
         console.log(err)
         return res.send({ status: false, data: [], error: err })
@@ -50,9 +47,10 @@ categoryController.getAllCategory = async (req, res) => {
 }
 
 categoryController.getSingleCategory = async (req, res) => {
+  const userId = req._id;
   const { id } = req.params;
   try {
-    const getSingleCategory = await categoryService.getSingleCategory(id);
+    const getSingleCategory = await categoryService.getSingleCategory(id, userId);
 
     if (!getSingleCategory || getSingleCategory.isDeleted) {
       return res.send({ msg: "Category not found or has been deleted", data: null, status: false });
@@ -67,17 +65,18 @@ categoryController.getSingleCategory = async (req, res) => {
 
 
 categoryController.editCategory = async (req, res) => {
+  const userId = req._id;
   const { id } = req.params;
   const { categoryName } = req.body;
 
   try {
-    const category = await categoryService.getSingleCategory(id);
+    const category = await categoryService.getSingleCategory(id, userId);
 
     if (!category || category.isDeleted) {
       return res.send({ status: false, msg: "Category not found or has been deleted. Cannot edit this category.", data: null });
     }
 
-    const updated = await categoryService.editCategory(id, { categoryName });
+    const updated = await categoryService.editCategory(id, userId, { categoryName });
     return res.send({ status: true, msg: "Category updated successfully", data: updated });
   } catch (err) {
     console.log(err);
@@ -87,9 +86,13 @@ categoryController.editCategory = async (req, res) => {
 
 
 categoryController.deleteCategory = async(req,res)=>{
+  const userId = req._id
   const {id} = req.params
   try{
-    const deleted = await categoryService.DeleteCategory(id, { $set: { isDeleted: true }})
+    const deleted = await categoryService.DeleteCategory(id, userId)
+    if(!deleted){
+      return res.send({status: false, msg: "Category not found", data: null})
+    }
 
     res.send({status: true, msg: "data deleted successfully", data: deleted})
   }catch(err){

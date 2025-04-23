@@ -14,22 +14,38 @@ customerService.getCustomerByMobile = async (mobile) => {
     return await Customer.findOne({ mobile });
 };
 
-customerService.getSingleCustomer = async (id) => {
-    const singleCustomer = await Customer.findById(id)
-    return singleCustomer
-}
-
-customerService.deleteCustomer = async (id) => {
-    return await Customer.findByIdAndUpdate(id, { isDeleted: true }, { new: true });
+customerService.getSingleCustomer = async (id, userId) => {
+    return await Customer.findOne({ _id: id, userId, isDeleted: false });
 };
 
-customerService.editCustomer = async (id, updateData) => {
-    return await Customer.findByIdAndUpdate(
-        id,
+
+customerService.deleteCustomer = async (id, userId) => {
+    return await Customer.findOneAndUpdate(
+        { _id: id, userId, isDeleted: false },
+        { isDeleted: true },
+        { new: true }
+    );
+};
+
+
+customerService.editCustomer = async (id, userId, updateData) => {
+    return await Customer.findOneAndUpdate(
+        { _id: id, userId, isDeleted: false },
         { ...updateData },
         { new: true, runValidators: true }
     );
 };
+
+
+customerService.editSoftDeletedCustomer = async (id, userId, updateData) => {
+    return await Customer.findOneAndUpdate(
+        { _id: id, userId, isDeleted: true }, // ensure it belongs to user and is soft-deleted
+        { ...updateData },
+        { new: true, runValidators: true }
+    );
+};
+
+
 
 customerService.countCustomers = async (userId) => {
     return await Customer.countDocuments({ userId, isDeleted: false });

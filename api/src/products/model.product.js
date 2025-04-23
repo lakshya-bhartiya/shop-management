@@ -8,16 +8,15 @@ const productSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    sellingPrice: {
+    price: {
       type: Number,
       required: true,
       min: 0,
     },
-    productCode: {
-      type: String,
+    stock: {
+      type: Number,
       required: true,
-      unique: true,
-      trim: true,
+      min: 0,
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -28,6 +27,11 @@ const productSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category", // This field references the Category model
       required: true,  // Make it required so each product must belong to a category
+    },
+    vendorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Vendor",
+      required: true,
     },
     isDeleted: {
       type: Boolean,

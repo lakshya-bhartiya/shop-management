@@ -4,19 +4,22 @@ const customerController = {};
 
 customerController.createCustomer = async (req, res) => {
     const { name, address, mobile } = req.body;
-    const { isDeleted } = req.query
     const userId = req._id;
 
     const existingCustomer = await customerService.getCustomerByMobile(mobile)
-    console.log(existingCustomer, "before")
     if (existingCustomer) {
         if (existingCustomer.isDeleted) {
-            console.log(existingCustomer._id, "after") 
-            customerService.editCustomer(existingCustomer._id, { isDeleted: false })
-            existingCustomer.isDeleted = false;
-            existingCustomer.name = name
-            existingCustomer.address = address;
-            return res.send({ status: true, msg: "customer created successfully", data: existingCustomer })
+            const restoredCustomer = await customerService.editSoftDeletedCustomer(
+                existingCustomer._id,
+                userId,
+                {
+                    name,
+                    address,
+                    mobile,
+                    isDeleted: false
+                }
+            );
+            return res.send({ status: true, msg: "customer created successfully", data: restoredCustomer });
         } else {
             return res.send({ status: false, msg: "customer is already exist", data: null })
         }
@@ -43,9 +46,10 @@ customerController.getCustomers = async (req, res) => {
 
 
 customerController.getSingleCustomer = async (req, res) => {
+    const userId = req._id;
     const { id } = req.params
     try {
-        const getSingleCustomer = await customerService.getSingleCustomer(id);
+        const getSingleCustomer = await customerService.getSingleCustomer(id, userId);
 
         if (!getSingleCustomer || getSingleCustomer.isDeleted) {
             return res.send({ msg: "customer not found or has been deleted", data: null, status: false });
@@ -59,9 +63,10 @@ customerController.getSingleCustomer = async (req, res) => {
 }
 
 customerController.deleteCustomer = async (req, res) => {
+    const userId = req._id;
     const { id } = req.params;
     try {
-        const deletedCustomer = await customerService.deleteCustomer(id);
+        const deletedCustomer = await customerService.deleteCustomer(id, userId);
         if (!deletedCustomer) {
             return res.send({ status: false, msg: "Customer not found" });
         }
@@ -73,11 +78,12 @@ customerController.deleteCustomer = async (req, res) => {
 };
 
 customerController.editCustomer = async (req, res) => {
+    const userId = req._id;
     const { id } = req.params; 
     const { name, address, mobile } = req.body; 
 
     try {
-        const updatedCustomer = await customerService.editCustomer(id, { name, address, mobile });
+        const updatedCustomer = await customerService.editCustomer(id, userId, { name, address, mobile });
 
         if (!updatedCustomer) {
             return res.send({ status: false, msg: "Customer not found" });
